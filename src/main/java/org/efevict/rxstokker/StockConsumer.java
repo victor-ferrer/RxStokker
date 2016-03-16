@@ -2,12 +2,9 @@ package org.efevict.rxstokker;
 
 import static reactor.bus.selector.Selectors.$;
 
-import java.util.function.Predicate;
-
 import javax.annotation.PostConstruct;
 
 import org.efevict.rxstokker.receiver.CSVStockQuotationConverter;
-import org.efevict.rxstokker.receiver.StockQuotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +16,10 @@ import reactor.core.publisher.WorkQueueProcessor;
 public class StockConsumer 
 {
 	@Autowired
-	private CSVStockQuotationConverter quotationConverter;
+	EventBus eventBus;
 	
 	@Autowired
-	EventBus eventBus;
+	CSVStockQuotationConverter converter;
 	
 	private WorkQueueProcessor<Event<String>> sink;
 	
@@ -31,22 +28,14 @@ public class StockConsumer
 	{
 		// Create the round robing processor and subscribe it to the source Flux
 		sink = WorkQueueProcessor.create();
-		
 		eventBus.on($("quotes"), sink);
 		
-		// Uncomment this and all events will be passed to all consumers
-		//sink = TopicProcessor.create();
-		
-		// Creates a Reactive Stream from the processor (having converted the lines to Quotations)
+		// Convert the string to quotations and send them to console
+		// TODO: Store the quotations instead of just printing them
 		sink.map(Event::getData)
-		    .map(quotationConverter::convertHistoricalCSVToStockQuotation)
-			.filter(new Predicate<StockQuotation>() {
+			.map(converter::convertHistoricalCSVToStockQuotation)
+			.consume(i -> System.out.println(i));
 
-			@Override
-			public boolean test(StockQuotation t) {
-				return t.getValue() > 34.0d;
-			}
-		}).consume(i -> System.out.println(Thread.currentThread() + " data=" + i));
 	}
 
 	public WorkQueueProcessor<Event<String>> getSink() {
