@@ -1,5 +1,6 @@
 # RxStokker: A Reactive implementation for Stokker with Reactor and Spring
 [![Travis CI Status](https://travis-ci.org/victor-ferrer/RxStokker.svg?branch=master)](https://travis-ci.org/victor-ferrer/RxStokker)
+[![codecov.io](https://codecov.io/github/victor-ferrer/RxStokker/coverage.svg?branch=master)](https://codecov.io/github/victor-ferrer/RxStokker?branch=master)
 
 This is a personal learning project on Reactive Programming with Reactor and Spring.
 
