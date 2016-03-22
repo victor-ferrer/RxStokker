@@ -2,6 +2,8 @@ package org.efevict.rxstokker.receiver;
 
 import static reactor.bus.selector.Selectors.$;
 
+import java.util.Date;
+
 import javax.annotation.PostConstruct;
 
 import org.efevict.rxstokker.repository.StockQuotationRepository;
@@ -34,7 +36,9 @@ public class StockConsumer
 		sink.map(Event::getData)
 			// Each save in the DB is sent to an executor that 
 			.flatMap(s -> Mono.fromCallable(() ->  stockRepo.save(s)))
-			.consume(i -> System.out.println(i));
+			// Log summary results
+			.count()
+			.consume(i -> System.out.println(new Date() + " Processed " + i + " quotes"));
 
 	}
 
