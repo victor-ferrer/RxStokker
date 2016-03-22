@@ -1,27 +1,28 @@
-package org.efevict.rxstokker;
+package org.efevict.rxstokker.receiver;
 
 import static reactor.bus.selector.Selectors.$;
 
 import javax.annotation.PostConstruct;
 
-import org.efevict.rxstokker.receiver.CSVStockQuotationConverter;
+import org.efevict.rxstokker.repository.StockQuotationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.WorkQueueProcessor;
 
 @Service
 public class StockConsumer 
 {
 	@Autowired
-	EventBus eventBus;
+	private EventBus eventBus;
 	
 	@Autowired
-	CSVStockQuotationConverter converter;
+	private StockQuotationRepository stockRepo;
 	
-	private WorkQueueProcessor<Event<String>> sink;
+	private WorkQueueProcessor<Event<StockQuotation>> sink;
 	
 	@PostConstruct
 	public void init()
@@ -30,15 +31,14 @@ public class StockConsumer
 		sink = WorkQueueProcessor.create();
 		eventBus.on($("quotes"), sink);
 		
-		// Convert the string to quotations and send them to console
-		// TODO: Store the quotations instead of just printing them
 		sink.map(Event::getData)
-			.map(converter::convertHistoricalCSVToStockQuotation)
+			// Each save in the DB is sent to an executor that 
+			.flatMap(s -> Mono.fromCallable(() ->  stockRepo.save(s)))
 			.consume(i -> System.out.println(i));
 
 	}
 
-	public WorkQueueProcessor<Event<String>> getSink() {
+	public WorkQueueProcessor<Event<StockQuotation>> getSink() {
 		return sink;
 	}
 }

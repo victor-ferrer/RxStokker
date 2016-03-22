@@ -2,24 +2,38 @@ package org.efevict.rxstokker.receiver;
 
 import java.util.Calendar;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class StockQuotation 
 {
-	private static final String DATE_FORMAT = "dd-MM-yyyy HH:mm:ss"; 
-	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long  id;
-	
+
+	@Column
 	private String stock;
 	
+	@Column
 	private Double value;
 	
+	@Column
 	private Calendar timestamp;
 	
+	@Column
 	private Double openValue;
 	
+	@Column
 	private Double highValue;
 
+	@Column
 	private Double lowValue;
 	
+	@Column
 	private Double volume;
 	
 	

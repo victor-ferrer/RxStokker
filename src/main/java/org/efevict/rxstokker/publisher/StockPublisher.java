@@ -2,27 +2,35 @@ package org.efevict.rxstokker.publisher;
 
 import java.util.List;
 
+import org.efevict.rxstokker.receiver.CSVStockQuotationConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
-public class StockPublisher
-{
+public class StockPublisher {
 	@Autowired
 	EventBus eventBus;
-	
+
 	@Autowired
 	private YahooFeeder feeder;
-	
-	public void publishQuotes(List<String> tickers) {
-		
-		Flux.fromIterable(tickers)
-		    .map(ticker -> feeder.getCSVQuotes(ticker))
-		    .consume(list -> list.forEach(line -> eventBus.notify("quotes",Event.wrap(line))));
 
+	@Autowired
+	private CSVStockQuotationConverter converter;
+
+	public void publishQuotes(List<String> tickers) {
+
+		Flux.fromIterable(tickers)
+		        // Get the quotes in a separate thread
+				.flatMap(s -> Mono.fromCallable(() -> feeder.getCSVQuotes(s)))
+				// Convert each list of raw quotes string in a new Flux<String>
+				.flatMap(list -> Flux.fromIterable(list))
+				// Convert the string to POJOs and notify them
+				.map(stock -> converter.convertHistoricalCSVToStockQuotation(stock))
+				.consume(quotation -> eventBus.notify("quotes", Event.wrap(quotation)));
 	}
 }
