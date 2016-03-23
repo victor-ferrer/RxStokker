@@ -1,27 +1,18 @@
 package org.efevict.rxstokker;
 
-import static reactor.bus.selector.Selectors.$;
-
 import java.util.Arrays;
-import java.util.GregorianCalendar;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.efevict.rxstokker.publisher.StockPublisher;
 import org.efevict.rxstokker.receiver.StockQuotation;
-import org.efevict.rxstokker.repository.StockQuotationRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import reactor.bus.Event;
-import reactor.bus.EventBus;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.WorkQueueProcessor;
 import reactor.core.test.TestSubscriber;
 
 @RunWith(SpringJUnit4ClassRunner.class)
