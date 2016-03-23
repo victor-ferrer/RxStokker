@@ -33,7 +33,7 @@ public class CSVStockQuotationConverter {
 	{
 	}
 	
-	public StockQuotation convertHistoricalCSVToStockQuotation(String input)
+	public StockQuotation convertHistoricalCSVToStockQuotation(String input, Long id)
 	{
  		String[] chunks = input.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
  		
@@ -43,6 +43,7 @@ public class CSVStockQuotationConverter {
 		}
 			
 		StockQuotation quotation = new StockQuotation();
+		quotation.setId(id);
 		quotation.setStock(chunks[TICKER_COLUMN]);
 		quotation.setValue(Double.parseDouble(chunks[HISTORICAL_CLOSE_COLUMN].replaceAll("\"", "").replaceAll(",", ".") + "d"));
 		
