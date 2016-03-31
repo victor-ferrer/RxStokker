@@ -2,6 +2,7 @@ package org.efevict.rxstokker.receiver;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -33,7 +34,7 @@ public class CSVStockQuotationConverter {
 	{
 	}
 	
-	public StockQuotation convertHistoricalCSVToStockQuotation(String input, Long id)
+	public StockQuotation convertHistoricalCSVToStockQuotation(String input)
 	{
  		String[] chunks = input.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
  		
@@ -43,7 +44,6 @@ public class CSVStockQuotationConverter {
 		}
 			
 		StockQuotation quotation = new StockQuotation();
-		quotation.setId(id);
 		quotation.setStock(chunks[TICKER_COLUMN]);
 		quotation.setValue(Double.parseDouble(chunks[HISTORICAL_CLOSE_COLUMN].replaceAll("\"", "").replaceAll(",", ".") + "d"));
 		
@@ -52,9 +52,15 @@ public class CSVStockQuotationConverter {
 		quotation.setOpenValue(Double.parseDouble(chunks[HISTORICAL_OPEN_COLUMN].replaceAll("\"", "").replaceAll(",", ".") + "d"));
 		quotation.setVolume(Double.parseDouble(chunks[HISTORICAL_VOLUME_COLUMN].replaceAll("\"", "").replaceAll(",", ".") + "d"));
 		
-		LocalDate time = LocalDate.parse(chunks[HISTORICAL_DATE_COLUMN].replaceAll("\"", ""), DateTimeFormatter.ISO_DATE);
-		Calendar calendar = new GregorianCalendar(time.getYear(), time.getMonthValue(), time.getDayOfMonth());
-		quotation.setTimestamp(calendar);
+		try {
+			LocalDate time = LocalDate.parse(chunks[HISTORICAL_DATE_COLUMN].replaceAll("\"", ""), DateTimeFormatter.ISO_DATE);
+			Calendar calendar = new GregorianCalendar(time.getYear(), time.getMonthValue(), time.getDayOfMonth());
+			quotation.setTimestamp(calendar);
+		}
+		catch (DateTimeParseException ex)
+		{
+			throw new IllegalArgumentException(ex);
+		}
 		
 		return quotation;
 		

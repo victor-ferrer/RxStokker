@@ -1,7 +1,6 @@
 package org.efevict.rxstokker.publisher;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.efevict.rxstokker.receiver.CSVStockQuotationConverter;
 import org.efevict.rxstokker.receiver.StockQuotation;
@@ -31,15 +30,21 @@ public class StockPublisher {
 	
 	public Flux<StockQuotation> getQuotes(List<String> tickers)
 	{
-		AtomicLong ids = new AtomicLong(0l);
-		
 		return 	Flux.fromIterable(tickers)
 				// Get the quotes in a separate thread
 				.flatMap(s -> Mono.fromCallable(() -> feeder.getCSVQuotes(s)))
 				// Convert each list of raw quotes string in a new Flux<String>
 				.flatMap(list -> Flux.fromIterable(list))
 				// Convert the string to POJOs and notify them
-				.map(stock -> converter.convertHistoricalCSVToStockQuotation(stock, ids.getAndIncrement()));	
+				.flatMap(x -> 
+					{
+						try {
+							return Flux.just(converter.convertHistoricalCSVToStockQuotation(x));
+						}
+						catch (IllegalArgumentException ex)
+						{
+							return Flux.empty();
+					}});	
 	}
 	
 }
